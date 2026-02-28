@@ -92,13 +92,22 @@ info "Copying application files to ${APP_DIR}..."
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Copy everything except setup files and data
-rsync -a --exclude='setup.sh' \
-         --exclude='home-vault.service' \
-         --exclude='.env' \
-         --exclude='node_modules' \
-         --exclude='dist' \
-         --exclude='data' \
-         "${SCRIPT_DIR}/" "${APP_DIR}/"
+# Copy files, skip setup artifacts and runtime dirs
+cd "${SCRIPT_DIR}"
+find . -mindepth 1 \
+  ! -name 'setup.sh' \
+  ! -name 'home-vault.service' \
+  ! -name '.env' \
+  ! -path './node_modules/*' \
+  ! -path './dist/*' \
+  ! -path './data/*' \
+  -print0 | while IFS= read -r -d '' f; do
+    if [[ -d "$f" ]]; then
+      mkdir -p "${APP_DIR}/$f"
+    else
+      cp --preserve=mode "$f" "${APP_DIR}/$f"
+    fi
+  done
 
 ok "Files copied"
 
