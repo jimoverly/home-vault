@@ -49,7 +49,13 @@ fi
 
 if [[ "${INSTALL_NODE:-false}" == "true" ]]; then
   info "Installing Node.js ${NODE_MAJOR} from NodeSource..."
-  dnf install -y curl
+
+  # Rocky Linux minimal ships curl-minimal which conflicts with curl.
+  # Only install curl if neither curl nor curl-minimal is present.
+  if ! command -v curl &>/dev/null; then
+    dnf install -y curl-minimal 2>/dev/null || dnf install -y curl
+  fi
+
   curl -fsSL https://rpm.nodesource.com/setup_${NODE_MAJOR}.x | bash -
   dnf install -y nodejs
   ok "Node.js $(node -v) installed"
