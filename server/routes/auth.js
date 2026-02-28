@@ -30,7 +30,7 @@ const insertUser = db.prepare(`
 `);
 const updateFailedAttempts = db.prepare('UPDATE users SET failed_attempts = ?, locked_until = ? WHERE id = ?');
 const resetFailedAttempts = db.prepare('UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = ?');
-const updatePassword = db.prepare('UPDATE users SET password_hash = ?, updated_at = datetime("now") WHERE id = ?');
+const updatePassword = db.prepare(`UPDATE users SET password_hash = ?, updated_at = datetime('now') WHERE id = ?`);
 
 // ─── REGISTER ─────────────────────────────────────────────────
 router.post('/register', async (req, res) => {
