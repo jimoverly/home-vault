@@ -56,6 +56,13 @@ if [[ "${INSTALL_NODE:-false}" == "true" ]]; then
     dnf install -y curl-minimal 2>/dev/null || dnf install -y curl
   fi
 
+  # Remove old Node.js from AppStream if present (conflicts with NodeSource)
+  if rpm -q nodejs &>/dev/null; then
+    warn "Removing existing Node.js $(node -v) from AppStream..."
+    dnf remove -y nodejs nodejs-libs npm 2>/dev/null || true
+    dnf module disable -y nodejs 2>/dev/null || true
+  fi
+
   curl -fsSL https://rpm.nodesource.com/setup_${NODE_MAJOR}.x | bash -
   dnf install -y nodejs
   ok "Node.js $(node -v) installed"
