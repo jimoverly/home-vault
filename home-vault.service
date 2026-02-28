@@ -1,0 +1,34 @@
+[Unit]
+Description=Home Vault — Secure Inventory & Document Tracker
+Documentation=file:///opt/home-vault/README.md
+After=network.target
+
+[Service]
+Type=simple
+User=homevault
+Group=homevault
+WorkingDirectory=/opt/home-vault
+EnvironmentFile=/opt/home-vault/.env
+ExecStart=/usr/bin/node server/index.js
+Restart=always
+RestartSec=5
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/home-vault /var/log/home-vault
+
+# Resource limits
+LimitNOFILE=65535
+TimeoutStartSec=30
+TimeoutStopSec=30
+
+# Logging to journald
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=home-vault
+
+[Install]
+WantedBy=multi-user.target
