@@ -8,6 +8,7 @@ Type=simple
 User=homevault
 Group=homevault
 WorkingDirectory=/opt/home-vault
+Environment=NODE_ENV=production
 EnvironmentFile=/opt/home-vault/.env
 ExecStart=/usr/bin/node server/index.js
 Restart=always
