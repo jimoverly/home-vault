@@ -333,7 +333,7 @@ sudo systemctl start home-vault
 | Layer | Technology |
 |-------|-----------|
 | Runtime | Node.js 20 on Rocky Linux |
-| Frontend | React 18, Vite |
+| Frontend | React 19, Vite |
 | Backend | Express 4 |
 | Database | SQLite (better-sqlite3) — zero-config, file-based |
 | Auth | bcryptjs, jsonwebtoken |
