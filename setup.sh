@@ -114,6 +114,11 @@ ok "Files copied"
 # ─── Step 6: Configure environment ───────────────────────────
 if [[ -f "${ENV_FILE}" ]]; then
   warn ".env already exists — keeping existing config"
+  # Remove NODE_ENV if present (Vite rejects it in .env files)
+  if grep -q '^NODE_ENV' "${ENV_FILE}"; then
+    sed -i '/^NODE_ENV/d' "${ENV_FILE}"
+    ok "Removed NODE_ENV from .env (now set in systemd service instead)"
+  fi
 else
   info "Generating .env with secure JWT secret..."
   JWT_SECRET=$(openssl rand -hex 64)
@@ -149,17 +154,32 @@ fi
 # ─── Step 7: Install dependencies ────────────────────────────
 info "Installing npm dependencies (this may take a minute)..."
 cd "${APP_DIR}"
-npm ci 2>&1 | tail -1
+if ! npm install 2>&1; then
+  fail "npm install failed — check Node.js version and network connectivity"
+fi
 ok "Dependencies installed"
+
+# Verify React is installed (common failure point)
+if [[ ! -d "${APP_DIR}/node_modules/react" ]]; then
+  warn "React missing after install — installing explicitly..."
+  npm install react react-dom 2>&1
+fi
 
 # ─── Step 8: Build frontend ─────────────────────────────────
 info "Building frontend..."
-npx vite build 2>&1 | tail -3
+if ! npx vite build 2>&1; then
+  fail "Frontend build failed — check error output above"
+fi
+
+# Verify dist was created
+if [[ ! -f "${APP_DIR}/dist/index.html" ]]; then
+  fail "Build completed but dist/index.html not found"
+fi
 ok "Frontend built to ${APP_DIR}/dist"
 
 # Remove dev dependencies after build
 info "Pruning dev dependencies..."
-npm prune --omit=dev 2>&1 | tail -1
+npm prune --omit=dev 2>&1
 ok "Dev dependencies removed"
 
 # ─── Step 9: Initialize database ─────────────────────────────
