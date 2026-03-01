@@ -88,28 +88,30 @@ mkdir -p "${APP_DIR}" "${DATA_DIR}" "${LOG_DIR}"
 ok "Directories created: ${APP_DIR}, ${DATA_DIR}, ${LOG_DIR}"
 
 # ─── Step 5: Copy application files ──────────────────────────
-info "Copying application files to ${APP_DIR}..."
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Copy everything except setup files and data
-# Copy files, skip setup artifacts and runtime dirs
-cd "${SCRIPT_DIR}"
-find . -mindepth 1 \
-  ! -name 'setup.sh' \
-  ! -name 'home-vault.service' \
-  ! -name '.env' \
-  ! -path './node_modules/*' \
-  ! -path './dist/*' \
-  ! -path './data/*' \
-  -print0 | while IFS= read -r -d '' f; do
-    if [[ -d "$f" ]]; then
-      mkdir -p "${APP_DIR}/$f"
-    else
-      cp --preserve=mode "$f" "${APP_DIR}/$f"
-    fi
-  done
-
-ok "Files copied"
+if [[ "${SCRIPT_DIR}" == "${APP_DIR}" ]]; then
+  ok "Already running from ${APP_DIR} — skipping file copy"
+else
+  info "Copying application files to ${APP_DIR}..."
+  cd "${SCRIPT_DIR}"
+  find . -mindepth 1 \
+    ! -name 'setup.sh' \
+    ! -name 'home-vault.service' \
+    ! -name '.env' \
+    ! -path './node_modules/*' \
+    ! -path './dist/*' \
+    ! -path './data/*' \
+    ! -path './.git/*' \
+    -print0 | while IFS= read -r -d '' f; do
+      if [[ -d "$f" ]]; then
+        mkdir -p "${APP_DIR}/$f"
+      else
+        cp --preserve=mode "$f" "${APP_DIR}/$f"
+      fi
+    done
+  ok "Files copied"
+fi
 
 # ─── Step 6: Configure environment ───────────────────────────
 if [[ -f "${ENV_FILE}" ]]; then
