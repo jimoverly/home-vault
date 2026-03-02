@@ -246,6 +246,8 @@ if command -v getenforce &>/dev/null && [[ "$(getenforce)" != "Disabled" ]]; the
   info "Setting SELinux contexts..."
   semanage fcontext -a -t httpd_sys_content_t "${APP_DIR}(/.*)?" 2>/dev/null || true
   semanage fcontext -a -t httpd_sys_rw_content_t "${DATA_DIR}(/.*)?" 2>/dev/null || true
+  # .env must be etc_t so systemd (init_t) can read EnvironmentFile
+  semanage fcontext -a -t etc_t "${APP_DIR}/\.env" 2>/dev/null || true
   restorecon -Rv "${APP_DIR}" "${DATA_DIR}" 2>/dev/null || true
 
   # Allow Node.js to bind to port 3000
